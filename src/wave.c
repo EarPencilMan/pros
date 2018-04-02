@@ -185,12 +185,9 @@ static INLINE const char * _speakerNextNote(const char *ptr, uint32_t num, Track
 	// Scan for comma delimited notes
 	while ((c = *ptr) != 0) {
 		if (c != ' ') {
-			// Duration in 64ths
+			// Duration in iterations
 			ptr = _speakerParseNumber(ptr, &dur);
-			if (dur < 1 || dur > 32)
-				dur = (uint32_t)def->duration;
-			else
-				dur = 32 / dur;
+			
 			c = *ptr;
 			if (c >= 'a' && c <= 'g') {
 				// No sign-extension can occur here as c has MSB clear!
@@ -207,18 +204,12 @@ static INLINE const char * _speakerNextNote(const char *ptr, uint32_t num, Track
 				note++;
 				ptr++;
 			}
-			// Dot?
-			if (*ptr == '.') {
-				dur = (3 * dur) >> 1;
-				ptr++;
-			}
 			// Octave 3-7
 			ptr = _speakerParseNumber(ptr, &oct);
 			// Pull defaults if invalid values found
-			if (oct < 3 || oct > 7)
-				oct = def->octave;
+
 			// Write out to array
-			wave[num].countdown = (uint16_t)(dur * (uint32_t)def->tempo);
+			wave[num].countdown = (uint16_t)(dur);
 			if (note != 0)
 				note = note + oct * 12 - 25;
 			wave[num].sample = NOTE_TABLE[note];
